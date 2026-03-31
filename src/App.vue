@@ -1,30 +1,24 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div id="app">
+    <header class="main-header">
+      <h1 class="brand-name">DennysKbellos</h1>
+      <p class="subtitle">Expertos en Colorimetría y Estilo</p>
+    </header>
+
+    <main>
+      <FormularioCita />
+    </main>
+  </div>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+<style>
+.brand-name {
+  color: #4e342e; /* Café */
+  font-size: 2.5rem;
+  margin-bottom: 0;
 }
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+.subtitle {
+  color: #ff80ab; /* Rosado */
+  font-style: italic;
 }
 </style>
