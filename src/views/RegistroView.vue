@@ -3,7 +3,7 @@
     <button class="close-btn-global" @click="$router.push('/')">×</button>
 
     <div class="split-card">
-      
+
       <div class="profile-side">
         <img src="@/assets/dennis.jpeg" alt="Dennys, dueña de DennysKbellos" class="dennys-photo" />
         <div class="profile-caption">
@@ -45,17 +45,49 @@
 
 <script setup>
 import { reactive } from 'vue';
+import { useRouter } from 'vue-router'; // Para poder cambiar de página
 
-// Lógica de datos (igual que antes)
+const router = useRouter();
+
+// Usamos UN SOLO objeto reactivo que coincida con tus v-model del template
 const usuario = reactive({
   nombre: '',
   email: '',
   password: ''
 });
 
-const handleRegistro = () => {
-  console.log('Datos:', usuario);
-  alert(`Procesando registro para ${usuario.nombre}. (Simulación)`);
+const handleRegistro = async () => {
+  // Preparamos el objeto para MockAPI
+  const datosParaEnviar = {
+    name: usuario.nombre,
+    email: usuario.email,
+    password: usuario.password,
+    tipo: "usuario" // Tu etiqueta mágica para no mezclar con las citas
+  };
+
+  try {
+    const respuesta = await fetch('https://69cbdec70b417a19e07b6a42.mockapi.io/Usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datosParaEnviar)
+    });
+
+    if (respuesta.ok) {
+      alert(`¡Bienvenida ${usuario.nombre}! Tu cuenta ha sido creada con éxito.`);
+      // Limpiamos el formulario
+      usuario.nombre = '';
+      usuario.email = '';
+      usuario.password = '';
+      
+      // Los mandamos al login para que entren formalmente
+      router.push('/login');
+    } else {
+      alert("Lo sentimos, hubo un problema con el registro.");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("No se pudo conectar con el servidor. Revisa tu conexión.");
+  }
 };
 </script>
 
@@ -66,8 +98,10 @@ const handleRegistro = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #fffafb; /* Fondo suave rosado */
-  position: relative; /* Para el botón de cerrar global */
+  background-color: #fffafb;
+  /* Fondo suave rosado */
+  position: relative;
+  /* Para el botón de cerrar global */
   padding: 40px 20px;
 }
 
@@ -78,21 +112,26 @@ const handleRegistro = () => {
   border-radius: 20px;
   box-shadow: 0 15px 35px rgba(78, 52, 46, 0.08);
   width: 100%;
-  max-width: 900px; /* Un poco más ancho para las dos columnas */
-  overflow: hidden; /* Para que la foto respete las esquinas redondeadas */
+  max-width: 900px;
+  /* Un poco más ancho para las dos columnas */
+  overflow: hidden;
+  /* Para que la foto respete las esquinas redondeadas */
 }
 
 /* COLUMNA IZQUIERDA: Foto */
 .profile-side {
-  flex: 1; /* Ocupa el 50% */
+  flex: 1;
+  /* Ocupa el 50% */
   position: relative;
-  background-color: #4e342e; /* Color café base por si no carga la foto */
+  background-color: #4e342e;
+  /* Color café base por si no carga la foto */
 }
 
 .dennys-photo {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Importante para que no se deforme */
+  object-fit: cover;
+  /* Importante para que no se deforme */
   display: block;
 }
 
@@ -123,7 +162,8 @@ const handleRegistro = () => {
 
 /* COLUMNA DERECHA: Formulario */
 .form-side {
-  flex: 1; /* Ocupa el otro 50% */
+  flex: 1;
+  /* Ocupa el otro 50% */
   padding: 50px;
   display: flex;
   flex-direction: column;
@@ -236,11 +276,15 @@ form {
 /* Responsive para celulares */
 @media (max-width: 768px) {
   .split-card {
-    flex-direction: column; /* Una columna en móvil */
+    flex-direction: column;
+    /* Una columna en móvil */
   }
+
   .profile-side {
-    height: 250px; /* Foto más baja arriba */
+    height: 250px;
+    /* Foto más baja arriba */
   }
+
   .form-side {
     padding: 30px;
   }

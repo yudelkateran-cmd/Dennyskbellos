@@ -1,13 +1,43 @@
 <template>
   <div class="home">
+    <!-- --- SECCIÓN HERO --- -->
     <section class="hero">
       <div class="hero-content">
         <h1 class="brand-title">DennysKbellos</h1>
-        <p class="hero-subtitle">El brillo que tu cabello merece.</p>
-        <button class="btn-glitter-main">Reservar Cita</button>
+        <p class="hero-subtitle">La magia de embellecer y cuidar tu cabello.</p>
+        <router-link to="/agendar-cita" class="btn-glitter-main">
+          Reservar Cita
+        </router-link>
       </div>
     </section>
 
+    <!-- --- NUEVA SECCIÓN: SOBRE LA DUEÑA --- -->
+    <section class="about-owner">
+      <div class="about-container">
+        <div class="owner-image-wrapper">
+          <!-- Asegúrate de tener la foto en esta ruta o cámbiala por la correcta -->
+          <img src="@/assets/dennis2.jpeg" alt="Dennys - Dueña de DennysKbellos" class="owner-photo">
+          <div class="image-badge">Dueña & Estilista</div>
+        </div>
+
+        <div class="owner-text">
+          <span class="subtitle">La experta tras tu cambio</span>
+          <h2>Pasión por resaltar tu magia y tu esencia</h2>
+          <p>
+            ¡Hola! Soy <strong>Dennys Castillo</strong>. Estilista profesional y una eterna apasionada por el arte de
+            transformar. Crecí rodeada de la magia que solo el mundo de la belleza puede brindar, y hoy, esa magia vive
+            en mis manos.
+          </p>
+          <p>
+            En <strong>DennysKbellos</strong>, no solo aplicamos técnica; hacemos magia con tu cabello. Diseñamos un estilo personalizado
+          usando productos premium para que cada hebra cuente tu propia historia de brillo y confianza.
+          </p>
+          <div class="signature">K'bellos by Dennys</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --- SECCIÓN SERVICIOS --- -->
     <section class="servicios-section">
       <h2 class="section-title">Nuestros Servicios</h2>
       <div class="grid-servicios">
@@ -29,9 +59,8 @@ const servicios = serviciosPeluqueria;
 </script>
 
 <style scoped>
-/* --- SECCIÓN HERO --- */
+/* --- ESTILOS EXISTENTES (HERO) --- */
 .hero {
-  /* Fondo café premium con degradado para dar profundidad */
   background: linear-gradient(rgba(78, 52, 46, 0.8), rgba(78, 52, 46, 0.9)),
     url('https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80');
   background-size: cover;
@@ -46,7 +75,6 @@ const servicios = serviciosPeluqueria;
 
 .brand-title {
   font-family: 'Playfair Display', serif;
-  /* Fuente elegante */
   font-size: 4rem;
   margin-bottom: 10px;
   letter-spacing: 3px;
@@ -57,31 +85,17 @@ const servicios = serviciosPeluqueria;
   font-style: italic;
   margin-bottom: 30px;
   color: #fce4ec;
-  /* Rosado pálido */
 }
 
-
-.leer-mas {
-  display: block;
-  margin-top: 20px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #ff80ab; /* Tu rosado característico */
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Botón con efecto Glitter para el Hero */
 .btn-glitter-main {
   background: linear-gradient(45deg, #ff80ab, #f48fb1, #fce4ec);
   background-size: 200% 200%;
-  border: none;
   padding: 15px 40px;
   color: white;
   font-size: 1.2rem;
   font-weight: bold;
   border-radius: 50px;
-  cursor: pointer;
+  text-decoration: none;
   transition: 0.5s;
   box-shadow: 0 5px 20px rgba(255, 128, 171, 0.4);
 }
@@ -91,72 +105,147 @@ const servicios = serviciosPeluqueria;
   transform: translateY(-3px);
 }
 
-/* --- SECCIÓN SERVICIOS --- */
+/* --- ESTILOS SECCIÓN DUEÑA (NUEVO) --- */
+.about-owner {
+  padding: 100px 10%;
+  background-color: #fffaf9;
+}
+
+.about-container {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.owner-image-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+.owner-photo {
+  width: 100%;
+  border-radius: 20px;
+  /* Sombra sólida café que combina con tu footer */
+  box-shadow: 20px 20px 0px #4e342e;
+}
+
+.image-badge {
+  position: absolute;
+  bottom: 20px;
+  right: -15px;
+  background-color: #ff80ab;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.owner-text {
+  flex: 1.2;
+  text-align: justify;
+}
+
+.subtitle {
+  color: #ff80ab;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+.owner-text h2 {
+  color: #4e342e;
+  font-size: 2.8rem;
+  margin: 15px 0;
+  line-height: 1.1;
+  font-family: 'Playfair Display', serif;
+}
+
+.owner-text p {
+  color: #5d4037;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+.signature {
+  font-size: 2.2rem;
+  color: #4e342e;
+  font-family: 'Dancing Script', cursive;
+  /* Si no tienes esta fuente, usa 'serif' */
+  margin-top: 20px;
+}
+
+/* --- ESTILOS SERVICIOS (MODIFICADOS) --- */
 .servicios-section {
-  padding: 80px 5%;
+  padding: 100px 5%;
   background-color: #fdfaf9;
 }
 
 .section-title {
   text-align: center;
   color: #4e342e;
-  font-size: 2.5rem;
-  margin-bottom: 50px;
+  font-size: 3rem;
+  margin-bottom: 60px;
+  font-family: 'Playfair Display', serif;
 }
 
 .grid-servicios {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .card-servicio {
   background: white;
-  padding: 40px 30px;
+  padding: 45px 35px;
   border-radius: 20px;
   text-align: center;
   border: 1px solid #fce4ec;
-  transition: all 0.4s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+  transition: 0.4s ease;
   text-decoration: none;
-  display: block; 
-
-
 }
 
 .card-servicio:hover {
-  transform: translateY(-10px);
+  transform: translateY(-12px);
   border-color: #ff80ab;
-  box-shadow: 0 10px 30px rgba(255, 128, 171, 0.15);
+  box-shadow: 0 15px 35px rgba(255, 128, 171, 0.2);
 }
 
-.card-icon {
-  font-size: 2rem;
-  margin-bottom: 15px;
+.leer-mas {
+  display: block;
+  margin-top: 25px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #ff80ab;
+  text-transform: uppercase;
 }
 
-h3 {
-  color: #4e342e;
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-}
-
-.servicio-detalle {
-  color: #795548;
-  line-height: 1.6;
-  font-size: 0.95rem;
-}
-
-/* Responsividad para móviles */
-@media (max-width: 768px) {
-  .brand-title {
-    font-size: 2.5rem;
+/* --- RESPONSIVIDAD --- */
+@media (max-width: 900px) {
+  .about-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 40px;
   }
 
-  .grid-servicios {
-    padding: 0 20px;
+  .owner-photo {
+    box-shadow: 15px 15px 0px #4e342e;
+  }
+}
+
+@media (max-width: 768px) {
+  .brand-title {
+    font-size: 2.8rem;
+  }
+
+  .owner-text h2 {
+    font-size: 2rem;
   }
 }
 </style>

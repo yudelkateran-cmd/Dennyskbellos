@@ -2,18 +2,19 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "baseUrl": ".",
     "moduleResolution": "node",
-    "paths": {
-      "@/*": ["src/*"]
-    },
+    "ignoreDeprecations": "6.0", 
+    "allowJs": true,
+    "checkJs": true,
+    "jsx": "preserve",
     "lib": [
       "ESNext",
       "DOM",
       "DOM.Iterable"
     ],
-    "checkJs": true,
-    "jsx": "preserve"
+    "paths": {
+      "@/*": ["./src/*"] 
+    }
   },
   "exclude": ["node_modules", "dist"]
 }
