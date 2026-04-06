@@ -4,9 +4,10 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/Dennyskbellos/', 
+
+  base: './', 
   build: {
-    outDir: 'docs', // Esto creará la carpeta para GitHub
+    outDir: 'docs',
   },
   resolve: {
     alias: {
