@@ -1,6 +1,5 @@
 import { createStore } from 'vuex'
-// 1. Cambiamos @ por ./ porque al estar afuera, servicios.js está en la misma carpeta o en src
-import { serviciosPeluqueria } from './src/servicios.js' 
+import { serviciosPeluqueria } from '../servicios.js' 
 
 export default createStore({
   state: {
@@ -12,7 +11,7 @@ export default createStore({
     }
   },
   getters: {
-    // 2. Añadimos las etiquetas para que no te salgan los errores de "any" otra vez
+    // Usamos @type {any} para que el editor no se queje del tipo de dato
     getServicioById: (/** @type {any} */ state) => (/** @type {any} */ id) => {
       return state.servicios.find((/** @type {any} */ s) => s.id === parseInt(id))
     }
