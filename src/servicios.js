@@ -5,13 +5,13 @@
  * @property {string} nombre
  * @property {string[]} subservicios
  * @property {any} fotos
- * @property {string} [detalle]  <-- El corchete [ ] significa que es opcional
+ * @property {string} [detalle]  
  */
 
 // @ts-ignore
-const contextoImagenes = require.context('./assets/trabajos', false, /\.(png|jpe?g|svg)$/);
+const contextoImagenes = import.meta.glob('./assets/trabajos/*.{png,jpg,jpeg,svg}', { eager: true });
 
-const todasLasFotos = contextoImagenes.keys().map(contextoImagenes);
+const todasLasFotos = Object.values(contextoImagenes).map((mod) => mod.default);
 
 /** @type {Servicio[]} */ // <-- Aquí le decimos que este array contiene "Servicios"
 export const serviciosPeluqueria = [
