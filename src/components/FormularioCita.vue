@@ -10,96 +10,152 @@
         </option>
       </select>
 
-      <input v-model="nuevaCita.nombre" type="text" placeholder="Tu Nombre" required />
-      <input v-model="nuevaCita.telefono" type="tel" placeholder="WhatsApp +569..." required />
+      <input v-model="nuevaCita.name" type="text" placeholder="Tu Nombre" required />
+      <input v-model="nuevaCita.phone" type="tel" placeholder="WhatsApp +569..." required />
       
-      <input v-model="nuevaCita.fecha" type="date" required />
-      <input v-model="nuevaCita.hora" type="time" required />
+      <label>Selecciona la Fecha:</label>
+      <input v-model="nuevaCita.fecha" type="date" :min="fechaMinima" @change="validarDisponibilidad" required />
 
-      <button type="submit">Reservar Cita</button>
+      <!-- Selector de Horas Estilo Botones -->
+      <div v-if="nuevaCita.fecha" class="horas-container">
+        <label>Selecciona una Hora Disponible:</label>
+        <div class="horas-grid">
+          <button 
+            type="button"
+            v-for="h in bloquesHorarios" 
+            :key="h"
+            :class="['hora-btn', { 'seleccionada': nuevaCita.hora === h }]"
+            :disabled="estaOcupada(nuevaCita.fecha, h)"
+            @click="nuevaCita.hora = h"
+          >
+            {{ h }}
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-enviar" :disabled="!nuevaCita.hora">
+        Reservar Cita {{ nuevaCita.hora }}
+      </button>
     </form>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { serviciosPeluqueria } from '../servicios.js';
 
+const urlAPI = 'https://69cbdec70b417a19e07b6a42.mockapi.io/Usuarios';
 const listaServicios = ref(serviciosPeluqueria);
-const urlAPI = 'https://69cbdec70b417a19e07b6a42.mockapi.io/Usuarios'; 
+const citasExistentes = ref([]);
+
+// Horarios de la peluquería
+const bloquesHorarios = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00'];
 
 const nuevaCita = ref({
-  nombre: '',
-  telefono: '',
+  name: '', // MockAPI usa 'name' según tu captura
+  phone: '', // MockAPI usa 'phone'
   servicio: '',
   fecha: '',
   hora: ''
 });
 
-const enviarCita = async () => {
+// Para no permitir citas en el pasado
+const fechaMinima = new Date().toISOString().split('T')[0];
+
+// 1. Obtener citas de MockAPI
+const cargarCitas = async () => {
   try {
-    const response = await axios.post(urlAPI, nuevaCita.value);
-  
-    alert(`¡Cita agendada con éxito, ${nuevaCita.value.nombre}! Te contactaremos pronto.`);
-    
-    // Limpiar formulario
-    nuevaCita.value = { nombre: '', telefono: '', servicio: '', fecha: '', hora: '' };
-  } catch (error) {
-    console.error("Error al enviar:", error);
-    alert('Ups, algo salió mal.');
+    const res = await axios.get(urlAPI);
+    citasExistentes.value = res.data;
+  } catch (e) {
+    console.error("Error cargando disponibilidad");
   }
 };
+
+// 2. Verificar si la hora está ocupada
+const estaOcupada = (fecha, hora) => {
+  return citasExistentes.value.some(c => c.fecha === fecha && c.hora === hora);
+};
+
+const enviarCita = async () => {
+  try {
+    await axios.post(urlAPI, nuevaCita.value);
+    alert(`¡Cita agendada para ${nuevaCita.value.name}!`);
+    nuevaCita.value = { name: '', phone: '', servicio: '', fecha: '', hora: '' };
+    cargarCitas(); // Recargar para bloquear la hora recién tomada
+  } catch (error) {
+    alert('Error al reservar.');
+  }
+};
+
+onMounted(cargarCitas);
 </script>
 
 <style scoped>
+/* Mantengo tus estilos base y añado los nuevos */
 .booking-container {
   max-width: 500px;
   margin: 40px auto;
   padding: 30px;
   border-radius: 20px;
   background: #ffffff;
-  /* Borde sutil en café claro */
   border: 1px solid #d7ccc8; 
   box-shadow: 0 15px 35px rgba(121, 85, 72, 0.1);
 }
 
-h2 {
-  text-align: center;
-  /* Café profundo y elegante */
-  color: #4e342e; 
-  font-family: 'Playfair Display', serif; /* Si puedes, usa una fuente elegante */
-  margin-bottom: 25px;
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 8px;
+  border: 1px solid #d7ccc8;
 }
 
-/* Efecto Glitter para el Botón */
-button {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 10px;
+.horas-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.hora-btn {
+  padding: 10px;
+  border: 1px solid #ff80ab;
+  background: white;
+  color: #ff80ab;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 0.9rem;
+}
+
+.hora-btn.seleccionada {
+  background: #ff80ab;
   color: white;
-  font-size: 1.1rem;
+}
+
+.hora-btn:disabled {
+  background: #eee;
+  border-color: #ccc;
+  color: #aaa;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.btn-enviar {
+  margin-top: 20px;
+  background: linear-gradient(45deg, #ff80ab, #f48fb1, #ff80ab, #fce4ec);
+  color: white;
+  border: none;
+  padding: 15px;
+  border-radius: 10px;
   font-weight: bold;
   cursor: pointer;
-  /* Degradado Rosado Glitter */
-  background: linear-gradient(45deg, #ff80ab, #f48fb1, #ff80ab, #fce4ec);
-  background-size: 200% 200%;
-  transition: 0.5s;
-  box-shadow: 0 4px 15px rgba(244, 143, 177, 0.4);
 }
 
-button:hover {
-  /* Efecto de movimiento en el brillo */
-  background-position: right center;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(244, 143, 177, 0.6);
-}
-
-input:focus, select:focus {
-  outline: none;
-  /* Resaltado en café cuando el usuario escribe */
-  border-color: #8d6e63; 
-  box-shadow: 0 0 5px rgba(141, 110, 99, 0.2);
+.btn-enviar:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 </style>

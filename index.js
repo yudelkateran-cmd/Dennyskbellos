@@ -1,5 +1,5 @@
 import { createStore } from 'vuex'
-// 1. Cambiamos @ por ./ porque al estar afuera, servicios.js está en la misma carpeta o en src
+
 import { serviciosPeluqueria } from './src/servicios.js' 
 
 export default createStore({

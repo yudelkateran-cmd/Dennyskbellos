@@ -10,41 +10,40 @@ const routes = [
   {
     path: '/about',
     name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
+    component: () => import('../views/AboutView.vue')
   },
   {
-  path: '/registro',
-  name: 'registro',
-  component: () => import('../views/RegistroView.vue') // Asegúrate de que la ruta del archivo sea correcta
-},
-{
-  path: '/servicio/:id',
-  name: 'DetalleServicio',
-  component: () => import('../views/ServiciosView.vue'),
-  props: true // Esto permite recibir el ID como una prop en la página
-},
-{
-  path: '/servicios/:id',  // <-- El ":id" es fundamental
-  name: 'Servicios',
-  component: () => import('../views/ServiciosView.vue')
-},
-{
+    path: '/registro',
+    name: 'registro',
+    component: () => import('../views/RegistroView.vue')
+  },
+  {
     path: '/login',
     name: 'Login',
-    component: () => import('../views/LoginView.vue') // Verifica que el nombre sea este
+    component: () => import('../views/LoginView.vue')
+  },
+  // --- CAMBIO AQUÍ: Ruta para ver TODOS los servicios ---
+  {
+    path: '/servicios', 
+    name: 'Servicios',
+    component: () => import('../views/ServiciosView.vue')
+  },
+  // Ruta para ver el detalle de UN servicio específico
+  {
+    path: '/servicio/:id',
+    name: 'DetalleServicio',
+    component: () => import('../views/ServiciosView.vue'),
+    props: true 
   },
   {
     path: '/agendar-cita',
     name: 'AgendarCita',
-    component: () => import('../views/AgendarCitaView.vue') // La crearemos después
+    component: () => import('../views/AgendarCitaView.vue')
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  history: createWebHistory('/'), 
   routes
 })
 

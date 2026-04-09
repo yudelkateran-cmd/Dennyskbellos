@@ -1,43 +1,43 @@
 <template>
   <footer class="main-footer">
     <div class="footer-content">
+      <!-- Sección Marca -->
       <div class="footer-section brand-section">
         <h4>DennysKbellos</h4>
         <p class="slogan">Expertos en Colorimetría y Estilo.</p>
         
-        <a href="https://www.instagram.com/dennys_kbellos" target="_blank" class="instagram-card">
-          <div class="insta-header">
-            <div class="insta-logo-placeholder">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8a3.6 3.6 0 0 0 3.6 3.6h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6A3.6 3.6 0 0 0 16.4 4H7.6zm8.4 2.8a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4zM12 7.2a4.8 4.8 0 1 1 0 9.6 4.8 4.8 0 0 1 0-9.6zm0 2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z"></path>
-              </svg>
-            </div>
-            <div class="insta-info">
-              <span class="insta-handle">@dennyskbellos</span>
-              <span class="insta-action">Ver Portafolio</span>
-            </div>
-          </div>
-          <div class="insta-grid-placeholder">
-            <div class="insta-box"></div>
-            <div class="insta-box"></div>
-            <div class="insta-box"></div>
-            <div class="insta-box"></div>
-          </div>
+        <!-- Instagram Simplificado -->
+        <a href="https://www.instagram.com/dennys_kbellos" target="_blank" class="social-link">
+          <span class="icon">📸</span>
+          <span class="text">@dennys_kbellos</span>
         </a>
       </div>
 
+      <!-- Sección Contacto y Mapa -->
       <div class="footer-section contact-section">
         <h4>Contacto</h4>
         <p class="address">
           <span>📍</span> 
           <span class="address-text">JJ. La Torre 461, Puertas del Mar, La Serena, Chile</span>
         </p>
+
+        <!-- Contenedor del Mapa -->
+        <div class="map-container">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3459.3475871271613!2d-71.2612349!3d-29.9118747!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9691ca76939634d3%3A0x6095033c462702a!2sJuan%20Jos%C3%A9%20Latorre%20461%2C%20La%20Serena%2C%20Coquimbo!5e0!3m2!1ses!2scl!4v1712580000000!5m2!1ses!2scl" 
+            width="100%" 
+            height="150" 
+            style="border:0;" 
+            allowfullscreen 
+            loading="lazy">
+          </iframe>
+        </div>
         
         <a href="https://wa.me/56956919142?text=Hola!%20Me%20gustaría%20agendar%20una%20cita%20en%20DennysKbellos" 
            target="_blank" 
-           class="whatsapp-link">
-           <span class="wa-icon">📱</span> 
-           <span class="wa-number">+56 9 5691 9142</span>
+           class="social-link whatsapp-style">
+           <span class="icon">📱</span> 
+           <span class="text">+56 9 5691 9142</span>
         </a>
       </div>
     </div>
@@ -49,21 +49,12 @@
 </template>
 
 <style scoped>
-/* Colores de la marca */
-:root {
-  --color-cafe: #4e342e;
-  --color-rosado-palido: #fce4ec;
-  --color-rosado-hover: #ffffff;
-  --color-negro-insta: #262626;
-  --color-gris-insta: #8e8e8e;
-}
-
 .main-footer {
   background-color: #4e342e;
   color: #fce4ec;
   padding: 50px 8% 30px;
   margin-top: 50px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Un poco de estilo de fuente */
+  font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
 .footer-content {
@@ -83,124 +74,49 @@ h4 {
   color: white; 
   margin-bottom: 20px; 
   font-size: 1.4rem;
-  letter-spacing: 1px;
 }
 
-.slogan, .address {
-  margin-bottom: 15px;
-  font-weight: 300;
-}
-
-.address {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.address-text {
-  flex: 1;
-}
-
-/* === ESTILOS TARJETA DE INSTAGRAM === */
-.instagram-card {
-  display: block;
-  background-color: white; /* Color base de la tarjeta */
-  border-radius: 12px;
-  padding: 15px;
-  text-decoration: none;
-  color: #262626; /* Color de texto interno */
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  overflow: hidden;
-  max-width: 320px; /* Tamaño controlado */
-  margin-top: 10px;
-}
-
-.instagram-card:hover {
-  transform: translateY(-5px); /* Pequeño salto al pasar el mouse */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-.insta-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.insta-logo-placeholder {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  padding: 6px;
-}
-
-.insta-logo-placeholder svg {
-  width: 100%;
-  height: 100%;
-}
-
-.insta-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.insta-handle {
-  font-weight: 600;
-  font-size: 1.1rem;
-}
-
-.insta-action {
-  font-size: 0.8rem;
-  color: #8e8e8e;
-}
-
-.insta-grid-placeholder {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-}
-
-.insta-box {
-  background-color: #efefef;
-  aspect-ratio: 1 / 1;
-  border-radius: 4px;
-}
-
-/* === ESTILOS WHATSAPP === */
-.whatsapp-link {
+/* Estilo unificado para enlaces sociales (Instagram y WhatsApp) */
+.social-link {
   display: flex;
   align-items: center;
   gap: 12px;
   color: #fce4ec;
   text-decoration: none;
   font-size: 1.1rem;
-  margin-top: 20px;
+  margin-top: 15px;
   padding: 10px 15px;
   border: 1px solid rgba(252, 228, 236, 0.2);
   border-radius: 8px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: all 0.3s ease;
+  width: fit-content;
 }
 
-.whatsapp-link:hover {
-  background-color: rgba(252, 228, 236, 0.05);
+.social-link:hover {
+  background-color: rgba(252, 228, 236, 0.1);
   color: #ffffff;
+  transform: translateX(5px);
 }
 
-.wa-icon { font-size: 1.2rem; }
-.wa-number { font-weight: 500; }
+/* Estilos para el Mapa */
+.map-container {
+  margin: 15px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(252, 228, 236, 0.1);
+}
 
-/* === PIE DE PÁGINA === */
+.address {
+  display: flex;
+  gap: 10px;
+  line-height: 1.4;
+}
+
 .footer-bottom {
   text-align: center;
   border-top: 1px solid rgba(252, 228, 236, 0.2);
   padding-top: 30px;
   font-size: 0.85rem;
-  font-weight: 300;
+  opacity: 0.8;
 }
 </style>

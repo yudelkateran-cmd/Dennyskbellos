@@ -1,19 +1,22 @@
 <template>
   <div class="detalle-page" v-if="servicio">
     <div class="header-servicio">
-      <h1>{{ servicio.nombre }}</h1>
-      <p class="descripcion">{{ servicio.detalle }}</p>
+      <!-- Si hay ID muestra el nombre, si no, un título general -->
+      <h1>{{ servicio.nombre || 'Nuestros Servicios' }}</h1>
+      <p class="descripcion">{{ servicio.detalle || 'Expertos en colorimetría y estilo en La Serena.' }}</p>
     </div>
 
     <section class="galeria-seccion">
       <h2 class="titulo-galeria">Nuestro Trabajo Real</h2>
       
-      <div v-if="servicio.fotos.length === 0" class="no-fotos">
+      <!-- Si no hay fotos (o no se han cargado) -->
+      <div v-if="!fotosAMostrar || fotosAMostrar.length === 0" class="no-fotos">
         <p>Próximamente fotos de nuestros trabajos en La Serena...</p>
       </div>
 
+      <!-- Grid de fotos -->
       <div v-else class="galeria-grid">
-        <div v-for="(img, index) in servicio.fotos" :key="index" class="foto-card">
+        <div v-for="(img, index) in fotosAMostrar" :key="index" class="foto-card">
           <img :src="img" alt="Trabajo de DennysKbellos" />
         </div>
       </div>
@@ -30,15 +33,39 @@ import { serviciosPeluqueria } from '@/servicios.js';
 
 const route = useRoute();
 
+// 1. Buscamos el servicio si es que hay un ID en la URL
 const servicio = computed(() => {
-
-  const servicioId = String(route.params.id); 
+  const servicioId = route.params.id;
   
-  return serviciosPeluqueria.find(s => s.id === parseInt(servicioId));
+  if (!servicioId) {
+    return { 
+      nombre: 'Nuestros Servicios', 
+      fotos: [], 
+      detalle: 'Expertos en colorimetría y estilo en La Serena.' 
+    };
+  }
+  
+  // Aquí faltaba cerrar el IF y poner el return del find
+  return serviciosPeluqueria.find(s => s.id === parseInt(String(servicioId)));
+}); // <-- Faltaba este cierre
+
+// 2. Lógica para saber qué fotos mostrar
+const fotosAMostrar = computed(() => {
+  const servicioId = route.params.id;
+
+  if (!servicioId) {
+    // Si vienes del Header, mostramos TODAS las fotos
+    return serviciosPeluqueria.flatMap(s => s.fotos);
+  }
+
+  // Si vienes por un servicio específico, solo sus fotos
+  const s = serviciosPeluqueria.find(item => item.id === parseInt(String(servicioId)));
+  return s ? s.fotos : [];
 });
 </script>
 
 <style scoped>
+/* Tu estilo original se mantiene igual, ¡está muy bonito! */
 .detalle-page { padding: 120px 5% 60px; text-align: center; }
 h1 { font-family: 'Playfair Display', serif; color: #4e342e; font-size: 3rem; }
 .descripcion { color: #6d4c41; font-size: 1.2rem; margin-bottom: 40px; }
