@@ -45,7 +45,7 @@ const routes = [
 
 const router = createRouter({
   // Agrega las barras /
-  history: createWebHistory('/Dennyskbellos/'), 
+  history: createWebHistory('/dennyskbellos/'), 
   routes
 })
 
