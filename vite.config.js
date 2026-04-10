@@ -8,7 +8,7 @@ export default defineConfig({
     'process.env': {}
   },
 
-  base: '/https://github.com/yudelkateran-cmd/Dennyskbellos/', 
+  base: '/Dennyskbellos/', 
   build: {
     outDir: 'docs',
   },

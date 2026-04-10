@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../components/HomeView.vue'
 
+
 const routes = [
   {
     path: '/',
@@ -43,7 +44,8 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory('/'), 
+  // Agrega las barras /
+  history: createWebHistory('/Dennyskbellos/'), 
   routes
 })
 
