@@ -14,9 +14,20 @@
       <input v-model="nuevaCita.phone" type="tel" placeholder="WhatsApp +569..." required />
 
       <label>Selecciona la Fecha:</label>
-      <input v-model="nuevaCita.fecha" type="date" :min="fechaMinima" @change="validarDisponibilidad" required />
+      <div v-if="mensajeDiaLleno" class="aviso-lleno">{{ mensajeDiaLleno }}</div>
 
-      <div v-if="nuevaCita.fecha" class="horas-container">
+      <VDatePicker 
+        v-model="fechaSeleccionada" 
+        :min-date="new Date()" 
+        :attributes="atributosCalendario"
+        @dayclick="onDiaSeleccionado" 
+        mode="date" 
+        expanded 
+        transparent 
+        borderless 
+      />
+
+      <div v-if="nuevaCita.fecha && !mensajeDiaLleno" class="horas-container">
         <label>Selecciona una Hora Disponible:</label>
         <div class="horas-grid">
           <button type="button" v-for="h in bloquesHorarios" :key="h"
@@ -28,7 +39,7 @@
         </div>
       </div>
 
-      <button type="submit" class="btn-enviar" :disabled="!nuevaCita.hora">
+      <button type="submit" class="btn-enviar" :disabled="!nuevaCita.hora || mensajeDiaLleno">
         Reservar Cita {{ nuevaCita.hora }}
       </button>
     </form>
@@ -36,68 +47,80 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { db } from '../firebase'; // Tu archivo de configuración
-import { collection, addDoc, getDocs, query } from "firebase/firestore";
+import { ref, computed, onMounted } from 'vue'; // Limpiamos los imports duplicados
+import { db } from '../firebase';
+import { collection, addDoc, getDocs } from "firebase/firestore";
 import { serviciosPeluqueria } from '../servicios.js';
 
 const listaServicios = ref(serviciosPeluqueria);
 const citasExistentes = ref([]);
+const mensajeDiaLleno = ref('');
+const fechaSeleccionada = ref(new Date()); // Para controlar el estado del calendario
 
-// Horarios de la peluquería
+// Marcadores visuales para el calendario
+const atributosCalendario = computed(() => {
+  return citasExistentes.value.map(cita => ({
+    dot: 'pink', 
+    dates: new Date(cita.fecha + 'T12:00:00'), 
+    popover: { label: 'Día con citas' }
+  }));
+});
+
 const bloquesHorarios = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00'];
 
 const nuevaCita = ref({
-  name: '', 
-  phone: '', 
+  name: '',
+  phone: '',
   servicio: '',
   fecha: '',
   hora: ''
 });
 
-const fechaMinima = new Date().toISOString().split('T')[0];
+const onDiaSeleccionado = (day) => {
+  nuevaCita.value.fecha = day.id; // Guarda el formato YYYY-MM-DD
+  validarFechaSeleccionada();
+};
 
-// 1. CARGAR CITAS DESDE FIREBASE (Antes era MockAPI)
 const cargarCitas = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, "citas"));
-    // Mapeamos los datos de Firebase al array local
     citasExistentes.value = querySnapshot.docs.map(doc => doc.data());
-    console.log("Citas sincronizadas desde Firebase");
   } catch (e) {
-    console.error("Error cargando disponibilidad de Firebase:", e);
+    console.error("Error en Firebase:", e);
   }
 };
 
-// 2. VERIFICAR DISPONIBILIDAD
 const estaOcupada = (fecha, hora) => {
   return citasExistentes.value.some(c => c.fecha === fecha && c.hora === hora);
 };
 
-// 3. ENVIAR CITA A FIREBASE
-const enviarCita = async () => {
-  try {
-    await addDoc(collection(db, "citas"), nuevaCita.value);
-    alert(`¡Cita agendada con éxito para ${nuevaCita.value.name}!`);
-    
-    // Limpiar formulario y recargar lista de ocupados
-    nuevaCita.value = { name: '', phone: '', servicio: '', fecha: '', hora: '' };
-    await cargarCitas(); 
-  } catch (error) {
-    console.error("Error al guardar en Firebase:", error);
-    alert("Hubo un error al guardar la cita.");
+const validarFechaSeleccionada = () => {
+  nuevaCita.value.hora = '';
+  const citasEseDia = citasExistentes.value.filter(c => c.fecha === nuevaCita.value.fecha).length;
+
+  if (citasEseDia >= bloquesHorarios.length) {
+    mensajeDiaLleno.value = '❌ Este día no tiene horas disponibles.';
+  } else {
+    mensajeDiaLleno.value = '';
   }
 };
 
-const validarDisponibilidad = () => {
-  nuevaCita.value.hora = ''; 
+const enviarCita = async () => {
+  try {
+    await addDoc(collection(db, "citas"), nuevaCita.value);
+    alert(`¡Cita agendada con éxito!`);
+    nuevaCita.value = { name: '', phone: '', servicio: '', fecha: '', hora: '' };
+    cargarCitas();
+  } catch (error) {
+    console.error("Error:", error);
+  }
 };
 
 onMounted(cargarCitas);
 </script>
 
 <style scoped>
-/* Tus estilos se mantienen iguales */
+/* Tus estilos están impecables, mantengo la coherencia visual */
 .booking-container {
   max-width: 500px;
   margin: 40px auto;
@@ -106,6 +129,16 @@ onMounted(cargarCitas);
   background: #ffffff;
   border: 1px solid #d7ccc8;
   box-shadow: 0 15px 35px rgba(121, 85, 72, 0.1);
+}
+
+.aviso-lleno {
+  background: #fff3f3;
+  color: #d32f2f;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin: 10px 0;
+  border: 1px solid #ffcdd2;
 }
 
 input, select {
@@ -157,10 +190,5 @@ input, select {
   border-radius: 10px;
   font-weight: bold;
   cursor: pointer;
-}
-
-.btn-enviar:disabled {
-  background: #ccc;
-  cursor: not-allowed;
 }
 </style>
