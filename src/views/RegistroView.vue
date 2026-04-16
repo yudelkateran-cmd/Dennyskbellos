@@ -45,11 +45,14 @@
 
 <script setup>
 import { reactive } from 'vue';
-import { useRouter } from 'vue-router'; // Para poder cambiar de página
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex'; // Importamos el Store
+import { auth } from '@/firebase.js'; // Importamos Firebase
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"; // Métodos de Firebase
 
 const router = useRouter();
+const store = useStore();
 
-// Usamos UN SOLO objeto reactivo que coincida con tus v-model del template
 const usuario = reactive({
   nombre: '',
   email: '',
@@ -57,36 +60,43 @@ const usuario = reactive({
 });
 
 const handleRegistro = async () => {
-  // Preparamos el objeto para MockAPI
-  const datosParaEnviar = {
-    name: usuario.nombre,
-    email: usuario.email,
-    password: usuario.password,
-    tipo: "usuario" // Tu etiqueta mágica para no mezclar con las citas
-  };
-
   try {
-    const respuesta = await fetch('https://69cbdec70b417a19e07b6a42.mockapi.io/Usuarios', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datosParaEnviar)
+    // 1. Crear el usuario en Firebase Authentication
+    const userCredential = await createUserWithEmailAndPassword(
+      auth, 
+      usuario.email, 
+      usuario.password
+    );
+    const user = userCredential.user;
+
+    // 2. Guardar el nombre real del usuario en su perfil de Firebase
+    await updateProfile(user, {
+      displayName: usuario.nombre
     });
 
-    if (respuesta.ok) {
-      alert(`¡Bienvenida ${usuario.nombre}! Tu cuenta ha sido creada con éxito.`);
-      // Limpiamos el formulario
-      usuario.nombre = '';
-      usuario.email = '';
-      usuario.password = '';
-      
-      // Los mandamos al login para que entren formalmente
-      router.push('/login');
-    } else {
-      alert("Lo sentimos, hubo un problema con el registro.");
-    }
+    // 3. Actualizar el Store inmediatamente
+    store.dispatch('updateUser', {
+      uid: user.uid,
+      email: user.email,
+      nombre: usuario.nombre
+    });
+
+    alert(`¡Bienvenida ${usuario.nombre}! Tu cuenta ha sido creada con éxito.`);
+    
+    // 4. Redirigir directamente a agendar cita (ya está logueada)
+    router.push('/agendar-cita');
+
   } catch (error) {
-    console.error("Error:", error);
-    alert("No se pudo conectar con el servidor. Revisa tu conexión.");
+    console.error("Error en el registro:", error.code);
+    
+    // Mensajes de error más claros para el cliente
+    if (error.code === 'auth/email-already-in-set') {
+      alert("Este correo ya está registrado. Intenta iniciar sesión.");
+    } else if (error.code === 'auth/weak-password') {
+      alert("La contraseña debe tener al menos 6 caracteres.");
+    } else {
+      alert("Hubo un error al crear la cuenta. Por favor intenta más tarde.");
+    }
   }
 };
 </script>
