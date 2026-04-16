@@ -61,42 +61,31 @@ const usuario = reactive({
 
 const handleRegistro = async () => {
   try {
-    // 1. Crear el usuario en Firebase Authentication
+    // 1. Crear usuario en Firebase (Reemplaza a MockAPI)
     const userCredential = await createUserWithEmailAndPassword(
-      auth, 
-      usuario.email, 
+      auth,
+      usuario.email,
       usuario.password
     );
-    const user = userCredential.user;
 
-    // 2. Guardar el nombre real del usuario en su perfil de Firebase
-    await updateProfile(user, {
+    // 2. Guardar el nombre en el perfil de Firebase
+    await updateProfile(userCredential.user, {
       displayName: usuario.nombre
     });
 
-    // 3. Actualizar el Store inmediatamente
+    // 3. Avisar al Store de la nueva sesión
     store.dispatch('updateUser', {
-      uid: user.uid,
-      email: user.email,
+      uid: userCredential.user.uid,
+      email: userCredential.user.email,
       nombre: usuario.nombre
     });
 
-    alert(`¡Bienvenida ${usuario.nombre}! Tu cuenta ha sido creada con éxito.`);
-    
-    // 4. Redirigir directamente a agendar cita (ya está logueada)
+    alert(`¡Bienvenida ${usuario.nombre}!`);
     router.push('/agendar-cita');
-
   } catch (error) {
-    console.error("Error en el registro:", error.code);
-    
-    // Mensajes de error más claros para el cliente
-    if (error.code === 'auth/email-already-in-set') {
-      alert("Este correo ya está registrado. Intenta iniciar sesión.");
-    } else if (error.code === 'auth/weak-password') {
-      alert("La contraseña debe tener al menos 6 caracteres.");
-    } else {
-      alert("Hubo un error al crear la cuenta. Por favor intenta más tarde.");
-    }
+    console.error("Error en Registro:", error.code);
+    // Errores comunes: email-already-in-use o weak-password
+    alert("Error: " + error.message);
   }
 };
 </script>
