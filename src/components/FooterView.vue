@@ -4,7 +4,7 @@
       <!-- Sección Marca -->
       <div class="footer-section brand-section">
         <h4>DennysKbellos</h4>
-        <p class="slogan">Expertos en Colorimetría y Estilo.</p>
+        <p class="slogan">Experta en Colorimetría y Estilo.</p>
         
         <!-- Instagram Simplificado -->
         <a href="https://www.instagram.com/dennys_kbellos" target="_blank" class="social-link">
