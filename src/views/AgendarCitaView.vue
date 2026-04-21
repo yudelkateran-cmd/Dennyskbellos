@@ -24,7 +24,7 @@
       </div>
 
       <div class="form-group">
-        <label>WhatsApp de contacto:</label>
+        <label>Fono de contacto:</label>
         <input v-model="nuevaCita.phone" type="tel" placeholder="+569..." required />
       </div>
 
