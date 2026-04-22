@@ -25,7 +25,7 @@
 
       <div class="form-group">
         <label>Fono de contacto:</label>
-        <input v-model="nuevaCita.phone" type="tel" placeholder="+569..." required />
+        <input v-model="nuevaCita.phone" type="tel" placeholder="Ej: 912345678" required />
       </div>
 
       <div class="form-group">
@@ -52,10 +52,24 @@
         </button>
 
         <div v-if="mostrarBotonPago" class="pago-container" id="seccion-pago">
-          <p class="pago-instruccion">¡Cita reservada! Para asegurar tu cupo, realiza el pago ahora:</p>
-          <button type="button" @click="irAlPago" class="btn-pago">
-            Pagar con Mercado Pago 💳
+          <div class="pago-exito-msg">
+            <span>✅</span>
+            <p><strong>¡Cita registrada!</strong></p>
+          </div>
+          <p class="pago-instruccion">Para asegurar tu cupo, paga de forma segura con tu banco:</p>
+
+          <button type="button" @click="irAlPago" class="btn-pasarela-total">
+            <div class="btn-content">
+              <span class="main-text">Pagar con Webpay / Débito / Crédito</span>
+              <div class="logos-pago">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Visa_logo.svg" alt="Visa" />
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" />
+                <img src="https://www.mercadopago.cl/instore/merchant/assets/img/icon-pp-mp.svg" alt="MP" />
+                <span class="webpay-label">Webpay</span>
+              </div>
+            </div>
           </button>
+          <p class="nota-seguridad">🛡️ Pago procesado de forma segura por Mercado Pago Chile</p>
         </div>
       </div>
     </form>
@@ -67,15 +81,9 @@ import { ref, computed, onMounted } from 'vue';
 import { db } from '../firebase';
 import { collection, addDoc, getDocs } from "firebase/firestore";
 import { serviciosPeluqueria } from '../servicios.js';
-import { useStore } from 'vuex';
-
-const store = useStore();
-const usuario = computed(() => store.state.user);
 
 // ESTADOS
 const mostrarBotonPago = ref(false);
-const mostrarPopupPago = ref(false);
-
 const listaServicios = ref(serviciosPeluqueria);
 const citasExistentes = ref([]);
 const mensajeDiaLleno = ref('');
@@ -90,63 +98,65 @@ const nuevaCita = ref({
   hora: ''
 });
 
-// DATOS TRANSFERENCIA
-const datosTransferencia = {
-  nombre: 'Dennys Mariangeles Castillo Duran',
-  rut: '26.618.593-6',
-  tipoCuenta: 'Cuenta Corriente',
-  numeroCuenta: '0 000 27 75007 9',
-  banco: 'Banco Santander',
-  correo: 'DENNYSCASTILLO49@GMAIL.COM'
-};
-
-// BANCOS
-const bancosChile = [
-  { nombre: 'Santander', url: 'https://www.santander.cl' },
-  { nombre: 'BancoEstado', url: 'https://www.bancoestado.cl' },
-  { nombre: 'Banco de Chile', url: 'https://www.bancochile.cl' },
-  { nombre: 'BCI', url: 'https://www.bci.cl' },
-  { nombre: 'Itaú', url: 'https://www.itau.cl' },
-  { nombre: 'Falabella', url: 'https://www.bancofalabella.cl' }
-];
-
-// VALIDACIÓN
+// VALIDACIÓN FLEXIBLE (Para que el cliente no se trabe)
 const formularioListo = computed(() => {
+  const tieneTelefono = nuevaCita.value.phone && nuevaCita.value.phone.toString().length >= 8;
+
   return (
     categoriaSeleccionada.value !== '' &&
     nuevaCita.value.serviciosDetalle.length > 0 &&
-    nuevaCita.value.phone.trim().length >= 12 &&
+    tieneTelefono &&
     nuevaCita.value.fecha !== '' &&
     nuevaCita.value.hora !== '' &&
     mensajeDiaLleno.value === ''
   );
 });
 
-// GUARDAR CITA
+// GUARDAR CITA Y MOSTRAR PAGO
 const enviarCita = async () => {
+  console.log("Intentando enviar cita...", nuevaCita.value);
+  
+  if (!formularioListo.value) {
+    alert("Por favor completa todos los campos.");
+    return;
+  }
+
   try {
-    await addDoc(collection(db, "citas"), {
+    // AQUÍ ESTÁ EL CAMBIO: agregamos "const docRef ="
+    const docRef = await addDoc(collection(db, "citas"), {
       ...nuevaCita.value,
       timestamp: new Date()
     });
+
+    console.log("Documento guardado con ID: ", docRef.id);
+    
+    // Si llegamos aquí, todo salió bien
     mostrarBotonPago.value = true;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Scroll suave hacia la sección de pago
+    setTimeout(() => {
+      const el = document.getElementById('seccion-pago');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 200);
+
   } catch (e) {
-    console.error(e);
+    console.error("Error completo de Firebase:", e); // Esto te dará más info en la consola
     alert("Error al guardar la cita.");
   }
 };
 
-// POPUP
-const abrirPopupPago = () => {
-  mostrarPopupPago.value = true;
+// REDIRECCIÓN A PASARELA DE PAGO
+const irAlPago = () => {
+  // AQUÍ DEBES PONER EL LINK QUE GENERES EN TU PANEL DE MERCADO PAGO
+  const linkMercadoPago = "https://mpago.li/1R4v3Ur";
+  window.location.href = linkMercadoPago;
 };
 
-const cerrarPopupPago = () => {
-  mostrarPopupPago.value = false;
-};
-
-// SERVICIOS
+// LÓGICA DE SERVICIOS
 const serviciosDisponibles = computed(() => {
   const cat = listaServicios.value.find(s => s.nombre === categoriaSeleccionada.value);
   return cat ? cat.subservicios : [];
@@ -158,7 +168,7 @@ const limpiarServicios = () => {
   nuevaCita.value.hora = '';
 };
 
-// CALENDARIO
+// CALENDARIO Y HORARIOS
 const atributosCalendario = computed(() => {
   return citasExistentes.value.map(cita => ({
     dot: 'pink',
@@ -192,30 +202,60 @@ onMounted(cargarCitas);
 </script>
 
 <style scoped>
-/* Optimizaciones de diseño */
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  /* Alinea verticalmente al centro */
+  justify-content: flex-start;
+  /* Alinea al inicio (izquierda) */
+  gap: 8px;
+  /* Espacio entre el cuadro y el texto */
+  font-size: 0.9rem;
+  padding: 5px 0;
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 18px;
+  /* Tamaño fijo para que no se deforme */
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  /* Evita que el cuadro se achique */
+}
+
+.checkbox-item label {
+  margin: 0;
+  cursor: pointer;
+  font-weight: normal;
+  color: #4e342e;
+}
+
 .booking-container {
   max-width: 600px;
   margin: 20px auto;
   padding: 30px;
   background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  height: auto;
+  border-radius: 24px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
+/* Sección de Pago Estilo Despegar */
 .pago-container {
+  display: block !important;
+  /* Forzamos visibilidad */
   margin-top: 30px;
-  padding: 20px;
-  background-color: #fffde7;
-  border: 2px dashed #ffd54f;
-  border-radius: 15px;
-  animation: fadeIn 0.5s ease-in;
+  padding: 25px;
+  background-color: #f0f7ff;
+  border: 2px solid #009ee3;
+  border-radius: 20px;
+  text-align: center;
 }
 
-@keyframes fadeIn {
+@keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
 
   to {
@@ -224,110 +264,127 @@ onMounted(cargarCitas);
   }
 }
 
-.btn-pago {
+.btn-pasarela-total {
   width: 100%;
-  background-color: #009ee3;
-  color: white;
-  border: none;
-  padding: 15px;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 1.2rem;
+  background: white;
+  border: 2px solid #009ee3;
+  padding: 20px;
+  border-radius: 15px;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
+.btn-pasarela-total:hover {
+  background: #009ee3;
+}
+
+.btn-pasarela-total:hover .main-text,
+.btn-pasarela-total:hover .webpay-label {
+  color: white;
+}
+
+.btn-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.main-text {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #009ee3;
+}
+
+.logos-pago {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logos-pago img {
+  height: 18px;
+  filter: grayscale(30%);
+}
+
+.webpay-label {
+  font-weight: 800;
+  color: #009ee3;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Resto de estilos */
 .btn-enviar {
   width: 100%;
-  padding: 15px;
-  background: linear-gradient(to right, #ff80ab, #f48fb1);
+  padding: 18px;
+  background: linear-gradient(135deg, #ff80ab, #f06292);
   border: none;
   color: white;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: bold;
+  font-size: 1.1rem;
   cursor: pointer;
-  margin-top: 35px;
+  margin-top: 20px;
 }
 
 .btn-enviar:disabled {
-  background: #ccc;
+  background: #e0e0e0;
   cursor: not-allowed;
 }
 
-.sub-servicios-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  background: #fff5f8;
-  padding: 15px;
-  border-radius: 12px;
-}
-
-.horas-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-.checkbox-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
-  color: #4e342e;
-}
-
-.checkbox-item input {
-  width: auto;
-  margin: 0;
-  cursor: pointer;
-}
-
-h2 {
-  color: #4e342e;
-  font-size: 2.2rem;
-  margin-bottom: 30px;
-  text-align: center;
-}
-
 .form-group {
-  margin-bottom: 25px;
+  margin-bottom: 22px;
   text-align: left;
 }
 
 label {
   display: block;
   font-weight: 600;
-  color: #6d4c41;
-  margin-bottom: 10px;
-  font-size: 1.1rem;
+  color: #4e342e;
+  margin-bottom: 8px;
 }
 
 select,
-input[type="tel"] {
+input {
   width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1.5px solid #eee;
-  background-color: #fafafa;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.sub-servicios-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  background: #fffafa;
+  padding: 12px;
+  border-radius: 10px;
 }
 
 .horas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
 }
 
 .hora-btn {
-  padding: 12px;
-  border: 1.5px solid #ff80ab;
-  background: transparent;
+  padding: 10px;
+  border: 1px solid #ff80ab;
+  background: white;
   color: #ff80ab;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .hora-btn.seleccionada {
   background: #ff80ab;
   color: white;
+}
+
+.nota-seguridad {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 12px;
 }
 </style>
