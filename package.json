@@ -9,6 +9,7 @@
     "deploy": "npm run build && gh-pages -d docs"
   },
   "dependencies": {
+    "bootstrap-icons": "^1.13.1",
     "firebase": "^10.8.0",
     "v-calendar": "^3.1.2",
     "vue": "^3.4.0",
