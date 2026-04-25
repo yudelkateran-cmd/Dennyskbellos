@@ -58,23 +58,27 @@
           </div>
           <p class="pago-instruccion">Para asegurar tu cupo, paga de forma segura con tu banco:</p>
 
-          <button type="button" @click="irAlPago" class="btn-pasarela-total">
-            <div class="btn-content">
-              <span class="main-text">Pagar con Webpay / Débito / Crédito</span>
-              <div class="logos-pago">
-                <img src="https://res.cloudinary.com/dzv9u66pu/image/upload/v1714571000/visa_logo.png" alt="Visa" />
+          <div class="pasarela-container">
+            <button type="button" @click="irAlPago" class="btn-pasarela-total">
+              <div class="btn-content">
+                <span class="main-text">Pagar con Webpay / Débito / Crédito</span>
+                <div class="logos-pago">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" />
 
-                <img src="https://res.cloudinary.com/dzv9u66pu/image/upload/v1714571000/mastercard_logo.png"
-                  alt="Mastercard" />
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" />
 
-                <img src="https://res.cloudinary.com/dzv9u66pu/image/upload/v1714571000/mercado-pago-logo.png"
-                  alt="MP" />
+                  <img
+                    src="https://http2.mlstatic.com/storage/logos-api-admin/a2ed2580-d2d4-11e7-bc35-c15077977464-m.png"
+                    alt="MP" />
 
-                <span class="webpay-label">Webpay</span>
+                  <span class="webpay-label">Webpay</span>
+                </div>
               </div>
-            </div>
-          </button>
-          <p class="nota-seguridad">🛡️ Pago procesado de forma segura por Mercado Pago Chile</p>
+            </button>
+            <p class="nota-seguridad">
+              <i class="bi bi-shield-fill-check"></i> Pago procesado de forma segura por Mercado Pago Chile
+            </p>
+          </div>
         </div>
       </div>
     </form>
