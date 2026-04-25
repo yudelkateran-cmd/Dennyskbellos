@@ -63,13 +63,9 @@
               <div class="btn-content">
                 <span class="main-text">Pagar con Webpay / Débito / Crédito</span>
                 <div class="logos-pago">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" />
-
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" />
-
-                  <img
-                    src="https://http2.mlstatic.com/storage/logos-api-admin/a2ed2580-d2d4-11e7-bc35-c15077977464-m.png"
-                    alt="MP" />
+                  <img src="@/assets/visa-5.svg" alt="Visa" class="pay-logo" />
+                  <img src="@/assets/mastercard-modern-design-.svg" alt="Mastercard" class="pay-logo" />
+                  <img src="@/assets/mercadopago-financiera.svg" alt="Mercado Pago" class="pay-logo" />
 
                   <span class="webpay-label">Webpay</span>
                 </div>
@@ -88,7 +84,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { db } from '../firebase';
-import { collection, addDoc, getDocs } from "firebase/firestore";
+// Importamos las funciones necesarias de Firestore
+import { collection, addDoc, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
 import { serviciosPeluqueria } from '../servicios.js';
 
 // ESTADOS
@@ -104,13 +101,13 @@ const nuevaCita = ref({
   servicioPrincipal: '',
   serviciosDetalle: [],
   fecha: '',
-  hora: ''
+  hora: '',
+  estado: 'pendiente' // Estado inicial por defecto
 });
 
-// VALIDACIÓN FLEXIBLE (Para que el cliente no se trabe)
+// VALIDACIÓN
 const formularioListo = computed(() => {
   const tieneTelefono = nuevaCita.value.phone && nuevaCita.value.phone.toString().length >= 8;
-
   return (
     categoriaSeleccionada.value !== '' &&
     nuevaCita.value.serviciosDetalle.length > 0 &&
@@ -121,51 +118,93 @@ const formularioListo = computed(() => {
   );
 });
 
-// GUARDAR CITA Y MOSTRAR PAGO
+// PASO A: GUARDAR CITA PREVIA
 const enviarCita = async () => {
-  console.log("Intentando enviar cita...", nuevaCita.value);
-
   if (!formularioListo.value) {
     alert("Por favor completa todos los campos.");
     return;
   }
 
   try {
-    // AQUÍ ESTÁ EL CAMBIO: agregamos "const docRef ="
+    // Guardamos con estado pendiente
     const docRef = await addDoc(collection(db, "citas"), {
       ...nuevaCita.value,
       timestamp: new Date()
     });
 
-    console.log("Documento guardado con ID: ", docRef.id);
+    // Guardamos el ID en localStorage para recuperarlo al volver de Mercado Pago
+    localStorage.setItem('id_reserva_pendiente', docRef.id);
 
-    // Si llegamos aquí, todo salió bien
     mostrarBotonPago.value = true;
 
-    // Scroll suave hacia la sección de pago
     setTimeout(() => {
-      const el = document.getElementById('seccion-pago');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      document.getElementById('seccion-pago')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 200);
 
   } catch (e) {
-    console.error("Error completo de Firebase:", e); // Esto te dará más info en la consola
-    alert("Error al guardar la cita.");
+    console.error("Error al guardar:", e);
+    alert("Error al registrar la intención de cita.");
   }
 };
 
-// REDIRECCIÓN A PASARELA DE PAGO
+// REDIRECCIÓN A MERCADO PAGO
 const irAlPago = () => {
-  // AQUÍ DEBES PONER EL LINK QUE GENERES EN TU PANEL DE MERCADO PAGO
-  const linkMercadoPago = "https://mpago.li/1R4v3Ur";
-  window.location.href = linkMercadoPago;
+  // Aquí podrías actualizar el timestamp antes de irte si quieres renovar los 15 min
+  window.location.href = "https://mpago.li/1R4v3Ur";
 };
 
-// LÓGICA DE SERVICIOS
+// PASO B: CONFIRMACIÓN AL VOLVER
+const confirmarReserva = async () => {
+  const idReserva = localStorage.getItem('id_reserva_pendiente');
+  if (idReserva) {
+    try {
+      const citaRef = doc(db, "citas", idReserva);
+      await updateDoc(citaRef, {
+        estado: 'confirmado'
+      });
+      localStorage.removeItem('id_reserva_pendiente');
+      alert("¡Tu pago fue recibido! Cita confirmada.");
+      await cargarCitas(); // Recargamos para bloquear el horario
+    } catch (e) {
+      console.error("Error confirmando:", e);
+    }
+  }
+};
+
+// LÓGICA DE CARGA Y DISPONIBILIDAD
+const cargarCitas = async () => {
+  const res = await getDocs(collection(db, "citas"));
+  const todas = res.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  // FILTRO INTELIGENTE: Bloqueamos si está confirmado 
+  // O si es pendiente pero se creó hace menos de 15 minutos
+  const ahora = new Date();
+  citasExistentes.value = todas.filter(cita => {
+    if (cita.estado === 'confirmado') return true;
+    if (cita.estado === 'pendiente' && cita.timestamp) {
+      const diff = (ahora - cita.timestamp.toDate()) / 1000 / 60;
+      return diff < 15; // Bloqueo temporal de 15 min
+    }
+    return false;
+  });
+};
+
+const estaOcupada = (fecha, hora) => {
+  return citasExistentes.value.some(c => c.fecha === fecha && c.hora === hora);
+};
+
+// CICLO DE VIDA (VUE 3 SETUP)
+onMounted(async () => {
+  await cargarCitas();
+
+  // Revisar si volvemos de un pago exitoso
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('status') === 'approved' || urlParams.get('pago') === 'exitoso') {
+    await confirmarReserva();
+  }
+});
+
+// MÉTODOS DE APOYO
 const serviciosDisponibles = computed(() => {
   const cat = listaServicios.value.find(s => s.nombre === categoriaSeleccionada.value);
   return cat ? cat.subservicios : [];
@@ -177,37 +216,20 @@ const limpiarServicios = () => {
   nuevaCita.value.hora = '';
 };
 
-// CALENDARIO Y HORARIOS
+const onDiaSeleccionado = (day) => {
+  nuevaCita.value.fecha = day.id;
+  nuevaCita.value.hora = '';
+  const total = citasExistentes.value.filter(c => c.fecha === nuevaCita.value.fecha).length;
+  mensajeDiaLleno.value = total >= bloquesHorarios.length ? '❌ Día completo' : '';
+};
+
+const bloquesHorarios = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00'];
 const atributosCalendario = computed(() => {
   return citasExistentes.value.map(cita => ({
     dot: 'pink',
     dates: new Date(cita.fecha + 'T12:00:00')
   }));
 });
-
-const onDiaSeleccionado = (day) => {
-  nuevaCita.value.fecha = day.id;
-  validarFechaSeleccionada();
-};
-
-const bloquesHorarios = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00'];
-
-const cargarCitas = async () => {
-  const res = await getDocs(collection(db, "citas"));
-  citasExistentes.value = res.docs.map(doc => doc.data());
-};
-
-const estaOcupada = (fecha, hora) => {
-  return citasExistentes.value.some(c => c.fecha === fecha && c.hora === hora);
-};
-
-const validarFechaSeleccionada = () => {
-  nuevaCita.value.hora = '';
-  const total = citasExistentes.value.filter(c => c.fecha === nuevaCita.value.fecha).length;
-  mensajeDiaLleno.value = total >= bloquesHorarios.length ? '❌ Día completo' : '';
-};
-
-onMounted(cargarCitas);
 </script>
 
 <style scoped>
