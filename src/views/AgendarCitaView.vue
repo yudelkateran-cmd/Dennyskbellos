@@ -138,8 +138,8 @@ const enviarCita = async () => {
     mostrarBotonPago.value = true;
 
     setTimeout(() => {
-      document.getElementById('seccion-pago')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 200);
+      document.getElementById('seccion-pago')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
 
   } catch (e) {
     console.error("Error al guardar:", e);
