@@ -60,13 +60,20 @@ const servicios = serviciosPeluqueria;
 </script>
 
 <style scoped>
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* --- ESTILOS EXISTENTES (HERO) --- */
 .hero {
+  /* Usamos background-size: cover y background-position: center para que no se estire */
   background: linear-gradient(rgba(78, 52, 46, 0.6), rgba(78, 52, 46, 0.9)),
     url('@/assets/portada2.png');
-  background-size: cover;
-  background-position: center top;
+  background-size: cover;      /* 👈 Esto evita que se distorsione */
+  background-position: center;   /* 👈 Centra la imagen siempre */
   background-repeat: no-repeat;
+  
   color: white;
   padding: 100px 20px;
   text-align: center;
@@ -74,8 +81,11 @@ const servicios = serviciosPeluqueria;
   justify-content: center;
   align-items: center;
   width: 100%;
+  
+  /* Cambiamos min-height por height para asegurar que en celular se vea bien */
+  min-height: 80vh; /* Ocupa el 80% de la altura de la pantalla del celular */
+  margin: 0;
   overflow: hidden;
-  min-height: 400px;
 }
 
 .brand-title {
@@ -245,12 +255,15 @@ const servicios = serviciosPeluqueria;
 }
 
 @media (max-width: 768px) {
-  .brand-title {
-    font-size: 2.8rem;
+  .hero {
+    /* Ajuste específico para iOS */
+    min-height: 70vh; 
+    background-attachment: scroll; /* El iPhone odia el 'fixed', mejor dejarlo en scroll */
   }
 
-  .owner-text h2 {
-    font-size: 2rem;
+  .brand-title {
+    font-size: 2.2rem; /* Un poco más pequeño para iPhone SE o modelos angostos */
+    white-space: nowrap; /* Evita que el nombre se parta en dos líneas feas */
   }
 }
 </style>
