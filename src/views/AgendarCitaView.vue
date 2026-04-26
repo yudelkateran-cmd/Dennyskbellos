@@ -83,12 +83,21 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { db } from '../firebase';
-// Importamos las funciones necesarias de Firestore
-import { collection, addDoc, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
+import { db } from '../firebase'; // Asegúrate de que esta ruta sea la correcta (donde tienes tu config)
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  query,
+  where
+} from "firebase/firestore";
 import { serviciosPeluqueria } from '../servicios.js';
+import { getAuth } from "firebase/auth"; // Importa esto al principio
 
 // ESTADOS
+const auth = getAuth();
 const mostrarBotonPago = ref(false);
 const listaServicios = ref(serviciosPeluqueria);
 const citasExistentes = ref([]);
@@ -96,7 +105,38 @@ const mensajeDiaLleno = ref('');
 const fechaSeleccionada = ref(new Date());
 const categoriaSeleccionada = ref('');
 
+const enviarNotificacionCita = async (datosReserva) => {
+  // Obtenemos el nombre directamente del usuario logueado
+  const usuarioActual = auth.currentUser;
+  const nombreParaMostrar = usuarioActual?.displayName || "Cliente registrado";
+  // (Si no tiene displayName, mostrará "Cliente registrado")
+
+  try {
+    await addDoc(collection(db, 'mail'), {
+      to: 'correo-de-dennys@gmail.com',
+      message: {
+        subject: `✨ Nueva Cita: ${nombreParaMostrar}`,
+        html: `
+          <div style="font-family: sans-serif; border: 1px solid #ddd; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #d4a373;">¡Nueva reserva en DennysKbellos!</h2>
+            <p><strong>Cliente:</strong> ${nombreParaMostrar}</p>
+            <p><strong>Correo del cliente:</strong> ${usuarioActual?.email}</p>
+            <p><strong>Servicio:</strong> ${datosReserva.servicio}</p>
+            <p><strong>Fecha y Hora:</strong> ${datosReserva.fecha} a las ${datosReserva.hora}</p>
+            <p><strong>Teléfono:</strong> ${datosReserva.telefono}</p>
+            <hr>
+            <p style="font-size: 12px; color: #888;">Este es un aviso automático de tu sistema de agenda.</p>
+          </div>
+        `,
+      },
+    });
+  } catch (error) {
+    console.error("Error al enviar correo:", error);
+  }
+};
+
 const nuevaCita = ref({
+  nombre: '',
   phone: '',
   servicioPrincipal: '',
   serviciosDetalle: [],
@@ -126,15 +166,25 @@ const enviarCita = async () => {
   }
 
   try {
-    // Guardamos con estado pendiente
-    const docRef = await addDoc(collection(db, "citas"), {
+    // 1. Guardamos la cita en Firestore
+    const dataParaGuardar = {
       ...nuevaCita.value,
       timestamp: new Date()
+    };
+
+    const docRef = await addDoc(collection(db, "citas"), dataParaGuardar);
+
+    // 2. DISPARAMOS EL CORREO (Llamada a la extensión)
+    // Usamos los datos de nuevaCita para el correo
+    await enviarNotificacionCita({
+      nombreCliente: "Nueva Cliente", // Si tienes un campo de nombre, úsalo aquí
+      servicio: nuevaCita.value.servicioPrincipal,
+      fecha: nuevaCita.value.fecha,
+      hora: nuevaCita.value.hora,
+      telefono: nuevaCita.value.phone
     });
 
-    // Guardamos el ID en localStorage para recuperarlo al volver de Mercado Pago
     localStorage.setItem('id_reserva_pendiente', docRef.id);
-
     mostrarBotonPago.value = true;
 
     setTimeout(() => {
@@ -142,11 +192,10 @@ const enviarCita = async () => {
     }, 300);
 
   } catch (e) {
-    console.error("Error al guardar:", e);
+    console.error("Error en el proceso:", e);
     alert("Error al registrar la intención de cita.");
   }
 };
-
 // REDIRECCIÓN A MERCADO PAGO
 const irAlPago = () => {
   // Aquí podrías actualizar el timestamp antes de irte si quieres renovar los 15 min
