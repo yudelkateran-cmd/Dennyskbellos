@@ -39,15 +39,27 @@ const routes = [
     path: '/agendar-cita',
     name: 'AgendarCita',
     component: () => import('../views/AgendarCitaView.vue'),
-    // Esta metaetiqueta indica que la ruta es privada
     meta: { requiresAuth: true } 
   }
 ]
 
 const router = createRouter({
-  // Mantenemos la base para GitHub Pages
   history: createWebHistory('/dennyskbellos/'), 
-  routes
+  routes,
+  // ESTA ES LA CONFIGURACIÓN CORRECTA DEL SCROLL
+  scrollBehavior(to, from, savedPosition) {
+    return new Promise((resolve) => {
+      // Esperamos 100ms para que el DOM se estabilice (clave para móviles)
+      setTimeout(() => {
+        if (savedPosition) {
+          resolve(savedPosition);
+        } else {
+          // Siempre al inicio (arriba a la izquierda)
+          resolve({ top: 0, left: 0 });
+        }
+      }, 100);
+    });
+  }
 })
 
 // Función auxiliar para esperar a que Firebase esté listo
@@ -67,15 +79,11 @@ const getCurrentUser = () => {
 // Guardián de navegación global
 router.beforeEach(async (to, from, next) => {
   const requiereAuth = to.matched.some(record => record.meta.requiresAuth);
-  
-  // Esperamos a que Firebase nos confirme si hay usuario antes de decidir
   const usuario = await getCurrentUser();
 
   if (requiereAuth && !usuario) {
-    // Si la ruta requiere auth y no hay usuario, mandamos al login
     next('/login'); 
   } else if (to.path === '/login' && usuario) {
-    // Si el usuario ya está logueado e intenta ir al login, lo mandamos a agendar
     next('/agendar-cita');
   } else {
     next();

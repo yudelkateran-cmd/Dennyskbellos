@@ -43,4 +43,11 @@ onMounted(() => {
   });
 });
 </script>
-
+<style>
+html,
+body {
+  scroll-behavior: auto !important;
+  height: auto !important;
+  overflow-x: hidden;
+}
+</style>
