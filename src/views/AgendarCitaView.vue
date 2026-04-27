@@ -113,7 +113,7 @@ const enviarNotificacionCita = async (datosReserva) => {
 
   try {
     await addDoc(collection(db, 'mail'), {
-      to: 'correo-de-dennys@gmail.com',
+      to: 'reserva@dennyskbellos.cl',
       message: {
         subject: `✨ Nueva Cita: ${nombreParaMostrar}`,
         html: `
